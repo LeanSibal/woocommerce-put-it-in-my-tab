@@ -12,6 +12,9 @@
 
 if( ! defined( 'ABSPATH' ) ) exit;
 
+require 'vendor/autoload.php';
+use Carbon\Carbon;
+
 add_action('plugins_loaded', 'woocommerce_put_it_on_my_tab_init');
 
 function woocommerce_put_it_on_my_tab_init() {
@@ -65,7 +68,7 @@ class WC_Put_It_On_My_Tab {
 	public function add_statements_to_my_account_menu_item( $items ) {
 		$index = 1;
 		return array_slice( $items, 0, $index, true ) +
-			[ 'statements' => 'Current Bill' ] +
+			[ 'statements' => 'Statements' ] +
 			array_slice( $items, $index, null, true );
 	}
 
@@ -80,6 +83,8 @@ class WC_Put_It_On_My_Tab {
 		$current_page = 1;
 		$customer_orders = wc_get_orders([
 			'customer' => get_current_user_id(),
+			'status' => [ 'pending', 'processing' ],
+			'date_created' => '>' . Carbon::now()->startOfMonth()->format('U'),
 			'page' => $current_page,
 			'paginate' => true
 		] );
