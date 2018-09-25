@@ -45,6 +45,7 @@ class WC_Put_It_On_My_Tab {
 
 	protected function setup_filters() {
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'add_statements_to_my_account_menu_item' ] );
+		add_filter( 'woocommerce_locate_template', [ $this, 'add_statements_template_to_woocommerce' ], 10, 5 );
 	}
 
 	protected function setup_actions() {
@@ -64,12 +65,31 @@ class WC_Put_It_On_My_Tab {
 	public function add_statements_to_my_account_menu_item( $items ) {
 		$index = 1;
 		return array_slice( $items, 0, $index, true ) +
-			[ 'statements' => 'Statements' ] +
+			[ 'statements' => 'Current Bill' ] +
 			array_slice( $items, $index, null, true );
 	}
 
+	public function add_statements_template_to_woocommerce( $template, $template_name, $template_path ) {
+		if( $template_name == 'myaccount/statements.php' ) {
+			$template = plugin_dir_path( __FILE__ ) . 'templates/myaccount/statements.php';
+		}
+		return $template;
+	}
+
 	public function customer_statements() {
-		echo "hello";
+		$current_page = 1;
+		$customer_orders = wc_get_orders([
+			'customer' => get_current_user_id(),
+			'page' => $current_page,
+			'paginate' => true
+		] );
+		wc_get_template(
+			'myaccount/statements.php', [
+				'current_page' => 1,
+				'customer_orders' => $customer_orders,
+				'has_orders' => 0 < $customer_orders->total
+			]
+		);
+
 	}
 }
-
